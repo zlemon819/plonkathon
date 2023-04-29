@@ -15,7 +15,7 @@ SETUP_FILE_POWERS_POS = 60
 @dataclass
 class Setup(object):
     #   ([1]₁, [x]₁, ..., [x^{d-1}]₁)
-    # = ( G,    xG,  ...,  x^{d-1}G ), where G is a generator of G_2
+    # = ( G,    xG,  ...,  x^{d-1}G ), where G is a generator of G_1
     powers_of_x: list[G1Point]
     # [x]₂ = xH, where H is a generator of G_2
     X2: G2Point
@@ -25,6 +25,7 @@ class Setup(object):
         contents = open(filename, "rb").read()
         # Byte 60 gives you the base-2 log of how many powers there are
         powers = 2 ** contents[SETUP_FILE_POWERS_POS]
+
         # Extract G1 points, which start at byte 80
         values = [
             int.from_bytes(contents[i : i + 32], "little")
@@ -69,9 +70,26 @@ class Setup(object):
         # Run inverse FFT to convert values from Lagrange basis to monomial basis
         # Optional: Check values size does not exceed maximum power setup can handle
         # Compute linear combination of setup with values
-        return NotImplemented
+        
+        values_mono = values.ifft().values
+        assert (len(values_mono) <= len(self.powers_of_x))
+
+        return ec_lincomb([(i, j) for i, j in zip (self.powers_of_x, values_mono)])
 
     # Generate the verification key for this program with the given setup
     def verification_key(self, pk: CommonPreprocessedInput) -> VerificationKey:
         # Create the appropriate VerificationKey object
-        return NotImplemented
+        
+        group_order = pk.group_order
+        QM_commit = self.commit(pk.QM)
+        QL_commit = self.commit(pk.QL)
+        QR_commit = self.commit(pk.QR)
+        QO_commit = self.commit(pk.QO)
+        QC_commit = self.commit(pk.QC)
+        S1_commit = self.commit(pk.S1)
+        S2_commit = self.commit(pk.S2)
+        S3_commit = self.commit(pk.S3)
+
+        w = Scalar.root_of_unity(group_order)
+        
+        return VerificationKey(group_order, QM_commit, QL_commit, QR_commit, QO_commit, QC_commit, S1_commit, S2_commit, S3_commit, self.X2, w)
