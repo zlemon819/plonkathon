@@ -88,7 +88,7 @@ class Prover:
 
         # Round 5
         msg_5 = self.round_5()
-
+        print("finish proof generation")
         return Proof(msg_1, msg_2, msg_3, msg_4, msg_5)
 
     def round_1(
