@@ -262,13 +262,19 @@ def poseidon_test(setup):
 
 
 if __name__ == "__main__":
+    l1 = [11, 12, 13, 14, 15]
+    # print(l1)
+    # print(l1[1:])
+    # print(l1[1:][::-1])
+
+
     # Step 1: Pass setup test
     setup_test()
 
     setup = basic_test()
 
     # Step 2: Pass prover test using verifier we provide (DO NOT READ TEST VERIFIER CODE)
-   # prover_test_dummy_verifier(setup)
+    prover_test_dummy_verifier(setup)
 
     # Step 3: Pass verifier test using your own verifier
    # with open("test/proof.pickle", "rb") as f:
