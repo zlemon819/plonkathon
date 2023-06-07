@@ -49,7 +49,15 @@ class AssemblyEqn:
         return Scalar(self.coeffs.get("$output_coeff", 1))
 
     def M(self) -> Scalar:
+        print("M test: ", self.wires.as_list())
+        print("M test: ", self.coeffs)
+
         if None not in self.wires.as_list():
+            # a = self.coeffs.get(get_product_key(self.wires.L, self.wires.R))
+            # print("a: ", a)
+            # print(Scalar(-1))
+
+            # get_product_key() is used to concatenate arguments to obtain the searching string for self.coeffs dictionary.
             return Scalar(
                 -self.coeffs.get(get_product_key(self.wires.L, self.wires.R), 0)
             )

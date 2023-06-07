@@ -19,7 +19,27 @@ def setup_test():
         list(map(Scalar, [1, 2, 3, 4, 5, 6, 7, 8])), Basis.LAGRANGE
     )
 
+    # class Program:
+    #    constraints: list[AssemblyEqn]
+    #    group_order: int
+
+    # program:
+    #    constraints: [(['a', 'b', 'c'], {'a*b': 1})]
+    #    group_order: 8
     program = Program(["c <== a * b"], 8)
+    print(program.constraints[0].wires.as_list())
+    print(program.constraints[0].coeffs)
+    print("program.group_order: ", program.group_order)
+   
+    # program:
+    #    constraints: [(['a', 'c', 'd'], {'': 987, 'a': 45, 'a*c': 1}),(['a', 'b', 'c'], {'a*b': 1})]
+    #    group_order: 8   
+    # program = Program(["d <== a * c - 45 * a + 987", "c <== a * b"], 8)
+    # print(program.constraints[0].wires.as_list())
+    # print(program.constraints[0].coeffs)
+    # print(program.constraints[1].wires.as_list())
+    # print(program.constraints[1].coeffs)
+
     commitment = setup.commit(dummy_values)
     assert commitment == G1Point(
         (
@@ -262,19 +282,22 @@ def poseidon_test(setup):
 
 
 if __name__ == "__main__":
-    l1 = [11, 12, 13, 14, 15]
-    # print(l1)
-    # print(l1[1:])
-    # print(l1[1:][::-1])
-
+    # lis = [11, 12, 13, 14, 15, 16]
+    # print(lis)
+    # print(lis[1:])
+    # print(lis[1:][::-1])
+    # print(lis[2:])
+    # print(lis[:3])
+    # for i in range(1, len(lis)):
+    #     print("hello plonk: ", i)
 
     # Step 1: Pass setup test
     setup_test()
 
-    setup = basic_test()
+    # setup = basic_test()
 
     # Step 2: Pass prover test using verifier we provide (DO NOT READ TEST VERIFIER CODE)
-    prover_test_dummy_verifier(setup)
+    # prover_test_dummy_verifier(setup)
 
     # Step 3: Pass verifier test using your own verifier
    # with open("test/proof.pickle", "rb") as f:

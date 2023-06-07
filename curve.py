@@ -8,6 +8,8 @@ G2Point = NewType("G2Point", tuple[b.FQ2, b.FQ2])
 
 
 class Scalar(Field):
+    # curve_order = 21888242871839275222246405745257275088548364400416034343698204186575808495617
+    # so it uses bn128 curve
     field_modulus = b.curve_order
 
     # Gets the first root of unity of a given group order
@@ -35,7 +37,20 @@ def ec_mul(pt, coeff):
 
 # Elliptic curve linear combination. A truly optimized implementation
 # would replace this with a fast lin-comb algo, see https://ethresear.ch/t/7238
+
+# suppose we hava a polynomial f(x) = a_0 + a_1 * x + a_2 * x**2 + ... + a_{k} * x**{k}, a set of points ([1]₁, [x]₁, ..., [x^{d-1}]₁) where d is 2048, k is far lesser than d.
+# In order to prove to somebody that we possess f(x) without revealing it directly, verifier will give a challenge x, then we need to compute and return "f(x)". However x now need to be secret,
+# so compute f(x) become impossible, we instead compute "f(x) * G = a_0 * [1]₁ + a_1 * [x]₁ + a_2 * [x^2]₁ + ... + a_{k} * [x^{k}]₁ + (0 * [x^{k+1}]₁ + ... 0 * [x^{d-1}]₁)” and return.
+
+# as ECDH assumption gives, f(x) G <--> f(x), we achieve the role.
 def ec_lincomb(pairs):
+    # Point at infinity over FQ
+    # Z1 = None
+
+    # curve_order = 21888242871839275222246405745257275088548364400416034343698204186575808495617
+    # so we need to tranform value from Scalar to int
+
+    print()
     return lincomb(
         [pt for (pt, _) in pairs],
         [int(n) % b.curve_order for (_, n) in pairs],
@@ -88,16 +103,25 @@ def multisubset(numbers, subsets, adder=lambda x, y: x + y, zero=0):
 
 # Reduces a linear combination `numbers[0] * factors[0] + numbers[1] * factors[1] + ...`
 # into a multi-subset problem, and computes the result efficiently
+
+# questions: what is multip-subset problem?
 def lincomb(numbers, factors, adder=lambda x, y: x + y, zero=0):
     # Maximum bit length of a number; how many subsets we need to make
     maxbitlen = max(len(bin(f)) - 2 for f in factors)
+    print("length of maxbitlen: ", maxbitlen)
     # Compute the subsets: the ith subset contains the numbers whose corresponding factor
     # has a 1 at the ith bit
     subsets = [
         {i for i in range(len(numbers)) if factors[i] & (1 << j)}
         for j in range(maxbitlen + 1)
     ]
+
+    print("length of subsets: ", len(subsets))
+    # print(subsets)
     subset_sums = multisubset(numbers, subsets, adder=adder, zero=zero)
+
+    print("length of subsets_sums: ", len(subset_sums))
+    # print(subset_sums)
     # For example, suppose a value V has factor 6 (011 in increasing-order binary). Subset 0
     # will not have V, subset 1 will, and subset 2 will. So if we multiply the output of adding
     # subset 0 with twice the output of adding subset 1, with four times the output of adding

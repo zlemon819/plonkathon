@@ -29,6 +29,7 @@ class CommonPreprocessedInput:
     # S_σ3(X) third permutation polynomial S_σ3(X)
     S3: Polynomial
 
+    # Todo：how to construct these three permutation polynomials?
 
 class Program:
     constraints: list[AssemblyEqn]
@@ -43,6 +44,12 @@ class Program:
 
     def common_preprocessed_input(self) -> CommonPreprocessedInput:
         L, R, M, O, C = self.make_gate_polynomials()
+        print("L.values: ", L.values)
+        print("R.values: ", R.values)
+        print("M.values: ", M.values)
+        print("O.values: ", O.values)
+        print("C.values: ", C.values)
+
         S = self.make_s_polynomials()
         return CommonPreprocessedInput(
             self.group_order,
@@ -71,16 +78,28 @@ class Program:
         # For each variable, extract the list of (column, row) positions
         # where that variable is used
         variable_uses: dict[Optional[str], Set[Cell]] = {None: set()}
+        print("initial variable_uses: ", variable_uses)
+        # print("type of Set[Cell]: ", type(Set[Cell]))
+        # print("Column.variants: ", Column.variants())
+
         for row, constraint in enumerate(self.constraints):
             for column, value in zip(Column.variants(), constraint.wires.as_list()):
                 if value not in variable_uses:
                     variable_uses[value] = set()
+                print("variable_uses before add: ", variable_uses)    
+                print("column: ", column)
+                print("row: ", row)
                 variable_uses[value].add(Cell(column, row))
+                print("variable_uses after add: ", variable_uses)
 
         # Mark unused cells
         for row in range(len(self.constraints), self.group_order):
             for column in Column.variants():
+                print("variable_uses[None]: ", variable_uses[None])  
+                print("column for unused cell: ", column)
+                print("row for unused cell: ", row)  
                 variable_uses[None].add(Cell(column, row))
+                print("variable_uses[None] after add: ", variable_uses[None])    
 
         # For each list of positions, rotate by one.
         #
@@ -90,6 +109,8 @@ class Program:
         # at S[LEFT][7] the field element representing (LEFT, 4)
         # at S[OUTPUT][2] the field element representing (LEFT, 7)
         # at S[LEFT][4] the field element representing (OUTPUT, 2)
+        #
+        # rotate store????
 
         S_values = {
             Column.LEFT: [Scalar(0)] * self.group_order,
@@ -97,19 +118,41 @@ class Program:
             Column.OUTPUT: [Scalar(0)] * self.group_order,
         }
 
+        print("S_values: ", S_values)
+        print("length of S_values: ", len(S_values))
+        print("the item of variable_uses: ", [uses for uses in variable_uses.items()])
+
+        # uses:
+        # [(None, {(4, 3), (3, 1), (5, 1), (2, 2), (1, 3), (6, 2), (7, 1), (4, 2), (3, 3), (5, 3), (1, 2), (2, 1), (6, 1), (7, 3), (3, 2), (4, 1), (5, 2), (1, 1), (2, 3), (7, 2), (6, 3)})
+        # , ('a', {(0, 1)})
+        # , ('b', {(0, 2)})
+        # , ('c', {(0, 3)})]
+        
         for _, uses in variable_uses.items():
             sorted_uses = sorted(uses)
+            print("sorted_uses: ", sorted_uses)
+            # [(1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (2, 3), (3, 1), (3, 2), (3, 3), (4, 1), (4, 2), (4, 3), (5, 1), (5, 2), (5, 3), (6, 1), (6, 2), (6, 3), (7, 1), (7, 2), (7, 3)]
+            # [(0, 1)]
+            # [(0, 2)]
+            # [(0, 3)]
+            print("length of sorted_uses: ", len(sorted_uses))
             for i, cell in enumerate(sorted_uses):
                 next_i = (i + 1) % len(sorted_uses)
                 next_column = sorted_uses[next_i].column
                 next_row = sorted_uses[next_i].row
                 S_values[next_column][next_row] = cell.label(self.group_order)
+                print("next_i", next_i)
+                print("next_column: ", next_column)
+                print("next_row: ", next_row)
+                print("S_values[next_column][next_row]: ", S_values[next_column][next_row])
 
         S = {}
         S[Column.LEFT] = Polynomial(S_values[Column.LEFT], Basis.LAGRANGE)
         S[Column.RIGHT] = Polynomial(S_values[Column.RIGHT], Basis.LAGRANGE)
         S[Column.OUTPUT] = Polynomial(S_values[Column.OUTPUT], Basis.LAGRANGE)
 
+        print("S_values: ", S_values)
+        print("length of S_values: ", len(S_values))
         return S
 
     # Get the list of public variable assignments, in order
@@ -146,6 +189,7 @@ class Program:
             M[i] = gate.M
             O[i] = gate.O
             C[i] = gate.C
+        
         return (
             Polynomial(L, Basis.LAGRANGE),
             Polynomial(R, Basis.LAGRANGE),

@@ -53,6 +53,7 @@ class Cell:
 # still allow them in the parser in case we find a way to compile them later
 def get_product_key(key1, key2):
     members = sorted((key1 or "").split("*") + (key2 or "").split("*"))
+    print("members: ", members)
     return "*".join([x for x in members if x])
 
 
