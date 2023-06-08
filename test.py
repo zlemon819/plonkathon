@@ -291,6 +291,9 @@ if __name__ == "__main__":
     # for i in range(1, len(lis)):
     #     print("hello plonk: ", i)
 
+    # print("6 // 4 = ", (6 // 4))
+    # print("6 / 4 = ", (6 / 4))
+
     # Step 1: Pass setup test
     setup_test()
 

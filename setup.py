@@ -73,7 +73,7 @@ class Setup(object):
         #            4082367875863433681332203403145435568316851327593401208105741076214120093531,
         #        ]),
         #    )
-        # target is what?
+        # target?
         target = (factor * b.G2[0].coeffs[0]).n
         while pos < len(contents):
             v = int.from_bytes(contents[pos : pos + 32], "little")

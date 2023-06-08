@@ -6,7 +6,6 @@ primitive_root = 5
 G1Point = NewType("G1Point", tuple[b.FQ, b.FQ])
 G2Point = NewType("G2Point", tuple[b.FQ2, b.FQ2])
 
-
 class Scalar(Field):
     # curve_order = 21888242871839275222246405745257275088548364400416034343698204186575808495617
     # so it uses bn128 curve
@@ -15,7 +14,15 @@ class Scalar(Field):
     # Gets the first root of unity of a given group order
     @classmethod
     def root_of_unity(cls, group_order: int):
+        # Todo: why root of unity w is computed in this way?
+        # according to fermat theorem, if a is prime to p, then a^{p-1} = 1 mod p
+        # so w^n = a^(p-1) = 1 mod p, w = a^{(p-1)/n} 
+        # there we let a = 5, p = field_modulus, n = group_order, then w = 5 ^{(field_modulus-1)/n}
         return Scalar(5) ** ((cls.field_modulus - 1) // group_order)
+        
+        # 注意“//”和“/”的区别，"//"表示整数除法，返回不大于结果的一个最大整数，"/"表示浮点数除法，返回浮点结果
+        # print("6 // 4 = ", (6 // 4))    console: 6 // 4 =  1
+        # print("6 / 4 = ", (6 / 4))     console: 6 / 4 =  1.5
 
     # Gets the full list of roots of unity of a given group order
     @classmethod
